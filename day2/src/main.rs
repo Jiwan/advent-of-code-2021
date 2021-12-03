@@ -43,7 +43,7 @@ fn part2() {
                 acc_depth + distance * acc_aim,
                 acc_aim + aim,
             )
-        },
+        }
     );
     println!("{}", distance * depth);
 }
