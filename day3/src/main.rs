@@ -41,7 +41,7 @@ fn part1() {
 
     for bit_pos in 0..bitcount {
         let mcv = most_common_value(&numbers, bit_pos, &Comparison::GreaterOrEqual);
-        gamma_rate = gamma_rate + (mcv << bit_pos);
+        gamma_rate += mcv << bit_pos;
     }
 
     let epsilon_rate = !gamma_rate & ((1 << bitcount) - 1);
