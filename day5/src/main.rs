@@ -39,16 +39,19 @@ struct Heightmap {
 }
 
 impl Heightmap {
-    fn from_lines(lines: &[Line], diagonals : bool) -> Self {
+    fn from_lines(lines: &[Line], diagonals: bool) -> Self {
         let mut map = HashMap::new();
 
-        for Line{begin, end} in lines {
+        for Line { begin, end } in lines {
             if !(diagonals || begin.0 == end.0 || begin.1 == end.1) {
                 continue;
             }
 
-            let dir = ((end.0 - begin.0).min(1).max(-1), (end.1 - begin.1).min(1).max(-1));
-            let mut curr_pos = *begin; 
+            let dir = (
+                (end.0 - begin.0).min(1).max(-1),
+                (end.1 - begin.1).min(1).max(-1),
+            );
+            let mut curr_pos = *begin;
 
             while curr_pos != *end {
                 (*map.entry((curr_pos.0, curr_pos.1)).or_default()) += 1;
@@ -71,7 +74,6 @@ impl Heightmap {
             }
             println!()
         }
-
     }
 }
 
