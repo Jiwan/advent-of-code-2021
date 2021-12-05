@@ -11,13 +11,7 @@ where
     let file = File::open(path).expect("Couldn't open data file");
     let mut lines = BufReader::new(file).lines();
 
-    let drawn_numbers = lines
-        .next()
-        .unwrap()
-        .unwrap()
-        .split(",")
-        .map(|number| number.parse::<i32>().unwrap())
-        .collect();
+    let drawn_numbers = lines.next().unwrap().unwrap().split(",").map(|number| number.parse::<i32>().unwrap()).collect();
 
     lines.next();
 
@@ -31,10 +25,7 @@ where
         })
         .collect();
 
-    let boards = all_row
-        .split(|v| v.is_empty())
-        .map(|v| v.to_vec())
-        .collect();
+    let boards = all_row.split(|v| v.is_empty()).map(|v| v.to_vec()).collect();
 
     (drawn_numbers, boards)
 }
