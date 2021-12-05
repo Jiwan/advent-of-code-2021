@@ -112,23 +112,17 @@ fn part1() {
 fn part2() {
     let (drawn_numbers, mut boards) = parse::<bool>("data/part1.txt");
 
-    let mut boards_left: Vec<usize> = (0..boards.len()).collect();
-    let mut last_board = None;
-
     for number in drawn_numbers {
-        boards_left.retain(|board_left| {
-            let unfinished_board = &mut boards[*board_left];
-            update_board(number, unfinished_board);
+        for board in &mut boards {
+            update_board(number, board);
+        }
 
-            !scan_for_completion(unfinished_board)
-        });
-
-        if boards_left.len() == 1 {
-            last_board = Some(boards_left[0]);
-        } else if boards_left.is_empty() {
-            let score = compute_board_score(&boards[last_board.unwrap()]);
+        if boards.len() == 1 && scan_for_completion(&boards[0]) {
+            let score = compute_board_score(&boards[0]);
             println!("{} * {} == {}", score, number, score * number);
             break;
+        } else {
+            boards.retain(|board| !scan_for_completion(board));
         }
     }
 }
