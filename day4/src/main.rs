@@ -70,7 +70,7 @@ fn scan_for_completion(board: &Board<bool>) -> bool {
     return false;
 }
 
-fn scan_first_completed_board(boards: &Vec<Board<bool>>) -> Option<usize> {
+fn scan_first_completed_board(boards: &[Board<bool>]) -> Option<usize> {
     for (index, board) in boards.iter().enumerate() {
         if scan_for_completion(&board) {
             return Some(index);
