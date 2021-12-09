@@ -4,6 +4,7 @@ use std::io::BufRead;
 use std::io::BufReader;
 use std::collections::HashSet;
 use std::collections::HashMap;
+use itertools::Itertools;
 
 const DIGITS_SEGMENTS_COUNT : [usize; 10] = [6, 2, 5, 5, 4, 5, 6, 3, 7, 6];
 const UNIQUE_DIGITS : [usize; 4] = [1, 4, 7, 8];
@@ -41,7 +42,7 @@ fn part1() {
     println!("{:?}", test);
 }
 
-fn solve_entry(entry : &Entry) {
+fn solve_entry(entry : &Entry) -> i32 {
     let signals = &entry.signals;
     let number_one_signal = signals.iter().find(|signal| signal.len() == 2).unwrap().chars().collect::<HashSet<_>>();
     let number_seven_signal = signals.iter().find(|signal| signal.len() == 3).unwrap().chars().collect::<HashSet<_>>();
@@ -62,10 +63,7 @@ fn solve_entry(entry : &Entry) {
 
     let a_b_c_d_f = HashSet::from([a_segment, b_segment, c_segment, d_segment, f_segment]);
 
-    let number_five_signal = signals_with_five_segments.iter().find(|s| {
-        let set = s.chars().collect::<HashSet<_>>();
-        set.difference(&a_b_c_d_f).count() == 1
-    }).unwrap().chars().collect::<HashSet<_>>();
+    let number_five_signal = signals_with_five_segments.iter().find(|s| !s.contains(c_segment)).unwrap().chars().collect::<HashSet<_>>();
 
     let g_segment = *number_five_signal.difference(&a_b_c_d_f).next().unwrap();
 
@@ -74,12 +72,32 @@ fn solve_entry(entry : &Entry) {
 
     let e_segment = *number_eight_signal.difference(&a_b_c_d_f_g).next().unwrap();
 
-    let mut number_map = HashMap::<String, i32>::new();
+    let number_map = HashMap::<Vec<char>, i32>::from([
+        ([a_segment, b_segment, c_segment, e_segment, f_segment, g_segment].iter().sorted().cloned().collect(), 0),
+        (number_one_signal.iter().sorted().cloned().collect(), 1),
+        ([a_segment, c_segment, d_segment, e_segment, g_segment].iter().sorted().cloned().collect(), 2),
+        ([a_segment, c_segment, d_segment, f_segment, g_segment].iter().sorted().cloned().collect(), 3),
+        (number_four_signal.iter().sorted().cloned().collect(), 4),
+        (number_five_signal.iter().sorted().cloned().collect(), 5),
+        ([a_segment, b_segment, d_segment, e_segment, f_segment, g_segment].iter().sorted().cloned().collect(), 6),
+        (number_seven_signal.iter().sorted().cloned().collect(), 7),
+        (number_eight_signal.iter().sorted().cloned().collect(), 8),
+        ([a_segment, b_segment, c_segment, d_segment, f_segment, g_segment].iter().sorted().cloned().collect(), 9),
+    ]);
+
+    let mut total = 0;
+    for (i, signal) in entry.output.iter().rev().enumerate() {
+        let number : Vec<char> = signal.chars().sorted().collect();
+        total += 10i32.pow(i as u32) * number_map.get(&number).unwrap();
+    }
+
+    total
 }
 
 fn part2() {
     let entries = parse("data/part1.txt");
-
+    let result = entries.iter().map(solve_entry).sum::<i32>();
+    println!("{}", result);
 }
 
 fn main() {

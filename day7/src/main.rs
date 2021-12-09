@@ -44,8 +44,6 @@ fn scan(slice: &[i32]) -> i32 {
         let right_cost = compute_cost(&slice, pos + 1, &mut costs_map);
         let left_cost = compute_cost(&slice, pos - 1, &mut costs_map);
 
-        println!("{} {} {} {}", pos, cost, right_cost, left_cost);
-
         if cost <= left_cost && cost <= right_cost {
             return cost;
         } else if cost > left_cost {
