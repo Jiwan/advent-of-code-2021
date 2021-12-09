@@ -1,24 +1,48 @@
+use itertools::Itertools;
+use std::collections::HashSet;
 use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
 
-#[derive(Debug)]
 struct Heightmap {
     data: Vec<Vec<i32>>,
 }
 
 impl Heightmap {
-    fn size(self: &Self) -> (usize, usize) {
+    fn size(&self) -> (usize, usize) {
         (self.data[0].len(), self.data.len())
     }
 
-    fn adjacent_points(self: &Self, pos: (usize, usize)) -> [Option<(usize, usize)>; 4] {
+    #[rustfmt::skip]
+    fn adjacent_points(&self, pos: (usize, usize)) -> [Option<(usize, usize)>; 4] {
         [
             if pos.0 > 0 { Some((pos.0 - 1, pos.1)) } else { None },
             if pos.1 > 0 { Some((pos.0, pos.1 - 1)) } else { None },
             if pos.0 < self.size().0 - 1 { Some((pos.0 + 1, pos.1)) } else { None },
             if pos.1 < self.size().1 - 1 { Some((pos.0, pos.1 + 1)) } else { None },
         ]
+    }
+
+    fn get_height(&self, pos: (usize, usize)) -> i32 {
+        self.data[pos.1][pos.0]
+    }
+
+    fn find_low_points(&self) -> Vec<(usize, usize)> {
+        self.data
+            .iter()
+            .enumerate()
+            .map(|(y, row)| {
+                row.iter()
+                    .enumerate()
+                    .filter(move |(x, value)| {
+                        self.adjacent_points((*x, y))
+                            .iter()
+                            .all(|point| point.map_or(true, |p| **value < self.get_height(p)))
+                    })
+                    .map(move |(x, _)| (x, y))
+            })
+            .flatten()
+            .collect()
     }
 }
 
@@ -41,31 +65,59 @@ fn part1() {
     let heightmap = parse("data/part1.txt");
 
     let risk_level: i32 = heightmap
-        .data
+        .find_low_points()
         .iter()
-        .enumerate()
-        .map(|(y, row)| {
-            row.iter()
-                .enumerate()
-                .filter(|(x, value)| {
-                    heightmap.adjacent_points((*x, y)).iter().all(|point| {
-                        if let Some((x2, y2)) = *point {
-                            **value < heightmap.data[y2][x2]
-                        } else {
-                            true
-                        }
-                    })
-                })
-                .map(|(_, value)| *value + 1)
-                .sum::<i32>()
-        })
+        .map(|p| heightmap.get_height(*p) + 1)
         .sum();
-
     println!("{}", risk_level);
 }
 
+#[derive(Default)]
+struct BasinCrawler {
+    visited_point: HashSet<(usize, usize)>,
+}
+
+impl BasinCrawler {
+    fn new() -> Self {
+        Default::default()
+    }
+
+    fn crawl(&mut self, pos: (usize, usize), heightmap: &Heightmap) -> usize {
+        if self.visited_point.contains(&pos) {
+            return 0;
+        }
+
+        self.visited_point.insert(pos);
+
+        if heightmap.get_height(pos) >= 9 {
+            return 0;
+        }
+
+        let mut size = 1;
+        for p in heightmap.adjacent_points(pos).iter().flatten() {
+            size += self.crawl(*p, heightmap);
+        }
+
+        size
+    }
+}
+
 fn part2() {
-    let entries = parse("data/part1.txt");
+    let heightmap = parse("data/part1.txt");
+
+    let basin: usize = heightmap
+        .find_low_points()
+        .iter()
+        .map(|p| {
+            let mut crawler = BasinCrawler::new();
+            crawler.crawl(*p, &heightmap)
+        })
+        .sorted()
+        .rev()
+        .take(3)
+        .product();
+
+    println!("{}", basin);
 }
 
 fn main() {
