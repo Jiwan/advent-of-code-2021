@@ -40,43 +40,37 @@ impl DumboOctopusesMap {
     fn execute_round(&mut self) -> u32 {
         let mut amount_of_flash = 0;
 
-        for y in 0..self.size().1 {
-            for x in 0..self.size().0 {
-                self.increase_energy((x, y));
-            }
+        for (x, y) in itertools::iproduct!(0..self.size().0, 1..self.size().1) {
+            self.increase_energy((x, y));
         }
 
         loop {
             let mut has_been_updated = false;
-            for y in 0..self.size().1 {
-                for x in 0..self.size().0 {
-                    let energy = self.get_energy((x, y));
 
-                    if *energy > 9 {
-                        *energy = -1;
-                        has_been_updated = true;
+            for (x, y) in itertools::iproduct!(0..self.size().0, 1..self.size().1) {
+                let energy = self.get_energy((x, y));
 
-                        self.adjacent_points((x, y))
-                            .iter()
-                            .flatten()
-                            .for_each(|p| self.increase_energy(*p));
-                    }
+                if *energy > 9 {
+                    *energy = -1;
+                    has_been_updated = true;
+
+                    self.adjacent_points((x, y))
+                        .iter()
+                        .flatten()
+                        .for_each(|p| self.increase_energy(*p));
                 }
             }
-
             if !has_been_updated {
                 break;
             }
         }
 
-        for y in 0..self.size().1 {
-            for x in 0..self.size().0 {
-                let energy = self.get_energy((x, y));
+        for (x, y) in itertools::iproduct!(0..self.size().0, 1..self.size().1) {
+            let energy = self.get_energy((x, y));
 
-                if *energy == -1 {
-                    *energy = 0;
-                    amount_of_flash += 1;
-                }
+            if *energy == -1 {
+                *energy = 0;
+                amount_of_flash += 1;
             }
         }
 
